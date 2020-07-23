@@ -23,29 +23,62 @@ import re
 import json
 
 from distutils.core import setup
+from setuptools.command.install import install
+from setuptools.command.develop import develop
 
 
-def install_config():
-    from dscommons.constants import HIVE
-    home = os.getenv("HOME")
-    config_dir = os.path.join(home, ".sparkmagic")
-    config_path = os.path.join(home, config_dir, "config.json")
-    example_path = os.path.join(
-        os.path.dirname(__file__), "example_config.json",
-    )
-    with open(example_path, "r") as infile:
-        config = json.load(infile)
-    port = 8998
-    endpoints = {
-        "local": "http://localhost:8998",
-        "prod": "http://{}:{}".format(HIVE["prod"], port),
-        "stg": "http://{}:{}".format(HIVE["stg"], port),
-    }
-    for lang in ['python', 'scala', 'r']:
-        cred_key = "kernel_{}_credentials".format(lang)
-        config[cred_key]["url"] = endpoints
-    with open(config_path, "w") as outfile:
-        json.dump(config, outfile, indent=4)
+class PostInstallCommand(install):
+    """Post-installation for installation mode."""
+    def run(self):
+        install.run(self)
+        # PUT YOUR POST-INSTALL SCRIPT HERE or CALL A FUNCTION
+        from dscommons.constants import HIVE
+        home = os.getenv("HOME")
+        config_dir = os.path.join(home, ".sparkmagic")
+        config_path = os.path.join(home, config_dir, "config.json")
+        example_path = os.path.join(
+            os.path.dirname(__file__), "example_config.json",
+        )
+        with open(example_path, "r") as infile:
+            config = json.load(infile)
+        port = 8998
+        endpoints = {
+            "local": "http://localhost:8998",
+            "prod": "http://{}:{}".format(HIVE["prod"], port),
+            "stg": "http://{}:{}".format(HIVE["stg"], port),
+        }
+        for lang in ['python', 'scala', 'r']:
+            cred_key = "kernel_{}_credentials".format(lang)
+            config[cred_key]["url"] = endpoints
+        with open(config_path, "w") as outfile:
+            json.dump(config, outfile, indent=4)
+
+
+class PostDevelopCommand(develop):
+    """Post-installation for installation mode."""
+    def run(self):
+        develop.run(self)
+        # PUT YOUR POST-INSTALL SCRIPT HERE or CALL A FUNCTION
+        from dscommons.constants import HIVE
+        home = os.getenv("HOME")
+        config_dir = os.path.join(home, ".sparkmagic")
+        config_path = os.path.join(home, config_dir, "config.json")
+        example_path = os.path.join(
+            os.path.dirname(__file__), "example_config.json",
+        )
+        with open(example_path, "r") as infile:
+            config = json.load(infile)
+        port = 8998
+        endpoints = {
+            "local": "http://localhost:8998",
+            "prod": "http://{}:{}".format(HIVE["prod"], port),
+            "stg": "http://{}:{}".format(HIVE["stg"], port),
+        }
+        for lang in ['python', 'scala', 'r']:
+            cred_key = "kernel_{}_credentials".format(lang)
+            config[cred_key]["url"] = endpoints
+        with open(config_path, "w") as outfile:
+            json.dump(config, outfile, indent=4)
 
 
 def read(path, encoding='utf-8'):
@@ -110,7 +143,8 @@ setup(name=NAME,
           'tornado>=4',
           'requests_kerberos>=0.8.0',
           'dscommons'
-      ])
-
-
-install_config()
+      ],
+      cmdclass={
+        'develop': PostDevelopCommand
+      },
+      )
