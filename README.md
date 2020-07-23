@@ -49,7 +49,7 @@ See the [Sending Local Data to Spark notebook](examples/Send%20local%20data%20to
         pip install sparkmagic
 
         # or iHeartRadio setup
-        pip install -e 'git+https://github.com/iheartradio/sparkmagic.git#egg=sparkmagic&subdirectory=sparkmagic'
+        pip install -e 'git+git@github.com:iheartradio/sparkmagic.git#egg=sparkmagic&subdirectory=sparkmagic'
 
 2. Make sure that ipywidgets is properly installed by running
 
@@ -97,7 +97,10 @@ Run a relevant query
 
 ```
 %%sql -o query1
-SELECT *
+SELECT
+    artist_id
+    , artist_name
+    , collaborative_artist
 FROM ihr_dwh.dim_artist
 LIMIT 5
 ```
@@ -106,6 +109,19 @@ Use a spark session
 
 ```
 spark.table("ihr_dwh.dim_artist").select("artist_id", "artist_name", "collaborative_artist").limit(5).show()
+```
+
+If you want to execute some code locally
+
+```
+%%local
+print("this runs locally")
+```
+
+Before you close it
+
+```
+%%cleanup -f
 ```
 
 ## Authentication Methods
