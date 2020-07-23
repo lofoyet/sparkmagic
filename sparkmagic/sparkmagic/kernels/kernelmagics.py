@@ -55,11 +55,13 @@ class KernelMagics(SparkMagicBase):
         # In order to set these following 3 properties, call %%_do_not_call_change_language -l language
         self.language = u""
         self.endpoint = None
+        self.env = u"stg"
         self.fatal_error = False
         self.fatal_error_message = u""
         if spark_events is None:
             spark_events = SparkEvents()
         self._spark_events = spark_events
+
 
     @magic_arguments()
     @cell_magic
@@ -220,6 +222,7 @@ class KernelMagics(SparkMagicBase):
     @magic_arguments()
     @cell_magic
     @argument("-f", "--force", type=bool, default=False, nargs="?", const=True, help="If present, user understands.")
+    @argument("-e", "--env", type=str, default="local", nargs="?", const=True, help="The environment to pull data from.")
     @wrap_unexpected_exceptions
     @handle_expected_exceptions
     @_event
@@ -230,6 +233,7 @@ class KernelMagics(SparkMagicBase):
             self.ipython_display.send_error(u"Could not parse JSON object from input '{}'".format(cell))
             return
         args = parse_argstring_or_throw(self.configure, line)
+        self.env = args.env
         if self.session_started:
             if not args.force:
                 self.ipython_display.send_error(u"A session has already been started. If you intend to recreate the "
@@ -241,6 +245,7 @@ class KernelMagics(SparkMagicBase):
                 self._do_not_call_start_session(u"")
         else:
             self._override_session_settings(dictionary)
+        self.refresh_configuration()
         self.info(u"")
 
     @magic_arguments()
@@ -433,6 +438,7 @@ class KernelMagics(SparkMagicBase):
     def refresh_configuration(self):
         credentials = getattr(conf, 'base64_kernel_' + self.language + '_credentials')()
         (username, password, auth, url) = (credentials['username'], credentials['password'], credentials['auth'], credentials['url'])
+        url = url[self.env]
         self.endpoint = Endpoint(url, auth, username, password)
 
     def get_session_settings(self, line, force):

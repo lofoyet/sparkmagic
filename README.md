@@ -45,7 +45,11 @@ See the [Sending Local Data to Spark notebook](examples/Send%20local%20data%20to
 
 1. Install the library
 
+        # via plain pypi
         pip install sparkmagic
+
+        # or iHeartRadio setup
+        pip install -e 'git+https://github.com/iheartradio/sparkmagic.git#egg=sparkmagic&subdirectory=sparkmagic'
 
 2. Make sure that ipywidgets is properly installed by running
 
@@ -66,6 +70,43 @@ See the [Sending Local Data to Spark notebook](examples/Send%20local%20data%20to
 6. (Optional) Enable the server extension so that clusters can be programatically changed:
 
         jupyter serverextension enable --py sparkmagic
+
+## Usage
+
+If you install with iHeartRadio setup, by default it is pointing to stg endpoint, if you want to switch to prod you can do this in a notebook cell
+
+```
+%%configure -e prod
+```
+
+Configure your spark session
+
+```
+%%configure
+{"name":"example-app", "driverMemory": "2G", "driverCores": 1, "executorMemory": "4G", "executorCores": 2, "numExecutors": 5}
+```
+
+Run a SQL query
+
+```
+%%sql -o query1
+SELECT 1, 2, 3
+```
+
+Run a relevant query
+
+```
+%%sql -o query1
+SELECT *
+FROM ihr_dwh.dim_artist
+LIMIT 5
+```
+
+Use a spark session
+
+```
+spark.table("ihr_dwh.dim_artist").select("artist_id", "artist_name", "collaborative_artist").limit(5).show()
+```
 
 ## Authentication Methods
 
